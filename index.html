@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="th">
+    <head>
+        <meta charset="UTF-8">
+        <title>Drama Control Panel</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="/socket.io/socket.io.js"></script>
+        <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #121212; color: white; padding: 10px; text-align: center; }
+        .section { background: #1e1e1e; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #333; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        button { padding: 15px 5px; border-radius: 8px; border: none; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        button:active { transform: scale(0.95); opacity: 0.8; }
+        
+        .btn-bgm { background: #03dac6; color: black; }
+        .btn-sfx { background: #cf6679; color: white; }
+        .btn-stop { background: #ffffff; color: #000; width: 100%; margin-top: 15px; font-size: 18px; padding: 20px; }
+
+        .vol-container { padding: 10px; background: #2c2c2c; border-radius: 10px; margin-bottom: 10px; }
+        input[type=range] { width: 100%; cursor: pointer; }
+        
+        h3 { color: #bb86fc; font-size: 18px; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 8px; margin-bottom: 15px; }
+    </style>
+    </head>
+    <body>
+
+        <div class="section">
+            <h3>🎚 Volume Control</h3>
+            <div class="vol-container">
+                <label>Master: <span id="vol-master-num">100</span>%</label>
+                <input type="range" min="0" max="1" step="0.01" value="1"
+                    oninput="updateVolume('master', this.value)">
+            </div>
+            <div class="grid">
+                <div class="vol-container">
+                    <label>BGM: <span id="vol-bgm-num">100</span>%</label>
+                    <input type="range" min="0" max="1" step="0.01" value="1"
+                        oninput="updateVolume('bgm', this.value)">
+                </div>
+                <div class="vol-container">
+                    <label>SFX: <span id="vol-sfx-num">100</span>%</label>
+                    <input type="range" min="0" max="1" step="0.01" value="1"
+                        oninput="updateVolume('sfx', this.value)">
+                </div>
+            </div>
+
+            <div class="grid" style="margin-top: 10px;">
+                <button style="background: #ffb74d; color: black;"
+                    onclick="sendCommand('pause-bgm')">⏸ PAUSE BGM
+                    (พักเพลง)</button>
+                <button style="background: #81c784; color: black;"
+                    onclick="sendCommand('resume-bgm')">▶️ RESUME BGM
+                    (เล่นต่อ)</button>
+            </div>
+            <button class="btn-stop" onclick="sendCommand('stop-all')">⏹ STOP
+                ALL (หยุดทั้งหมด)</button>
+        </div>
+
+        <div class="section">
+            <h3>🎭 เพลงประกอบ (BGM) / SFX</h3>
+            <div class="grid">
+                <button class="btn-bgm" onclick="sendSound('track1')">1.
+                    เสียงนก</button>
+                <button class="btn-bgm" onclick="sendSound('track2')">2.
+                    หมดสิ้น</button>
+                <button class="btn-bgm" onclick="sendSound('track3')">3.
+                    พาวเวอร์พับเกิล</button>
+                <button class="btn-bgm" onclick="sendSound('track4')">4.
+                    ลูซีควาน</button>
+                <button class="btn-bgm" onclick="sendSound('track5')">5.
+                    กินข้าว</button>
+                <button class="btn-bgm" onclick="sendSound('track6_1')">6.1
+                    ชาชัก</button>
+                <button class="btn-bgm" onclick="sendSound('track6_2')">6.2
+                    นางร้ายตบ</button>
+                <button class="btn-bgm" onclick="sendSound('track7')">7.
+                    หนูออก</button>
+                <button class="btn-bgm" onclick="sendSound('track8')">8.
+                    หนูเต้น</button>
+                <button class="btn-bgm" onclick="sendSound('track9')">9.
+                    ซักผ้า</button>
+                <button class="btn-bgm" onclick="sendSound('track10')">10.
+                    ราชาอิลญีน</button>
+                <button class="btn-bgm" onclick="sendSound('track11')">11.
+                    ส่งจดหมาย</button>
+                <button class="btn-bgm" onclick="sendSound('track12')">12.
+                    ทำชุด</button>
+                <button class="btn-bgm" onclick="sendSound('track13')">13.
+                    รถมารับ</button>
+                <button class="btn-bgm" onclick="sendSound('track14_1')">14.1
+                    ร้องไห้</button>
+                <button class="btn-bgm" onclick="sendSound('track14_2')">14.2
+                    รถซื้อแกง</button>
+                <button class="btn-bgm" onclick="sendSound('track15')">15.
+                    ในวัง</button>
+                <button class="btn-bgm" onclick="sendSound('track16')">16.
+                    นักเลง</button>
+                <button class="btn-bgm" onclick="sendSound('track17')">17.
+                    บ้านซิน</button>
+                <button class="btn-bgm" onclick="sendSound('track18')">18.
+                    จบ</button>
+            </div>
+        </div>
+        <div class="section">
+            <h3>🎬 เอฟเฟกต์ (SFX)</h3>
+            <div class="grid">
+                <button class="btn-sfx" onclick="sendSound('sfx1')">1.
+                    น้ำหก</button>
+                <button class="btn-sfx" onclick="sendSound('sfx2')">2.
+                    ดึงผ้าม่าน</button>
+                <button class="btn-sfx" onclick="sendSound('sfx3')">3.
+                    ระเบิด</button>
+                <button class="btn-sfx" onclick="sendSound('sfx4')">4.
+                    ซักผ้า</button>
+                <button class="btn-sfx" onclick="sendSound('sfx5')">5.
+                    เคาะประตู</button>
+                <button class="btn-sfx" onclick="sendSound('sfx6')">6.
+                    เปิดประตู</button>
+                <button class="btn-sfx" onclick="sendSound('sfx7')">7.
+                    ดีใจ</button>
+                <button class="btn-sfx" onclick="sendSound('sfx8')">8.
+                    ฉีกเสื้อ</button>
+                <button class="btn-sfx" onclick="sendSound('sfx9')">9.
+                    โกรธ</button>
+                <button class="btn-sfx" onclick="sendSound('sfx10')">10.
+                    แปลงร่าง</button>
+            </div>
+        </div>
+
+        <div style="display:none">
+            <audio id="track1" src="sounds/1.เสียงนก.mov"
+                preload="auto"></audio>
+            <audio id="track2" src="sounds/2.หมดสิ้น.mov"
+                preload="auto"></audio>
+            <audio id="track3" src="sounds/3.พาวเวอร์พับเกิล.mov"
+                preload="auto"></audio>
+            <audio id="track4" src="sounds/4.ลูซีควาน.mov"
+                preload="auto"></audio>
+            <audio id="track5" src="sounds/5.กินข้าว.mov"
+                preload="auto"></audio>
+            <audio id="track6_1" src="sounds/6.1ชาชัก.mov"
+                preload="auto"></audio>
+            <audio id="track6_2" src="sounds/6.2นางร้ายตบอามีน(หลังชาชัก).mov"
+                preload="auto"></audio>
+            <audio id="track7" src="sounds/7.หนูออก.mov" preload="auto"></audio>
+            <audio id="track8" src="sounds/8.หนูเต้น.mov"
+                preload="auto"></audio>
+            <audio id="track9" src="sounds/9.ซักผ้า.mov" preload="auto"></audio>
+            <audio id="track10" src="sounds/10.ราชาอิลญีน.mov"
+                preload="auto"></audio>
+            <audio id="track11" src="sounds/11.ส่งจดหมาย.mov"
+                preload="auto"></audio>
+            <audio id="track12" src="sounds/12.ทำชุด.mov"
+                preload="auto"></audio>
+            <audio id="track13" src="sounds/13.รถมารับ.mov"
+                preload="auto"></audio>
+            <audio id="track14_1" src="sounds/14.1ร้องไห้.mov"
+                preload="auto"></audio>
+            <audio id="track14_2" src="sounds/14.2ร้องไห้ รถซื้อแกง.mov"
+                preload="auto"></audio>
+            <audio id="track15" src="sounds/15.ในวัง.mov"
+                preload="auto"></audio>
+            <audio id="track16" src="sounds/16.นักเลง.mov"
+                preload="auto"></audio>
+            <audio id="track17" src="sounds/17.บ้านซิน.mov"
+                preload="auto"></audio>
+            <audio id="track18" src="sounds/18.จบ.mov" preload="auto"></audio>
+
+            <audio id="sfx1" src="sounds/1.น้ำหก_.mov" preload="auto"></audio>
+            <audio id="sfx2" src="sounds/2.ดึงผ้าม่าน__.mov"
+                preload="auto"></audio>
+            <audio id="sfx3" src="sounds/3.ระเบิด_.mov" preload="auto"></audio>
+            <audio id="sfx4" src="sounds/4.ซักผ้า_.mov" preload="auto"></audio>
+            <audio id="sfx5" src="sounds/5.เคาะประตู__.mov"
+                preload="auto"></audio>
+            <audio id="sfx6" src="sounds/6.เปิดประตู_.mov"
+                preload="auto"></audio>
+            <audio id="sfx7" src="sounds/7.ดีใจ_.mov" preload="auto"></audio>
+            <audio id="sfx8" src="sounds/8.ฉีกเสื้อ_.mov"
+                preload="auto"></audio>
+            <audio id="sfx9" src="sounds/9.โกรธ_.mov" preload="auto"></audio>
+            <audio id="sfx10" src="sounds/10.แปลงร่าง_.mov"
+                preload="auto"></audio>
+        </div>
+
+        <script>
+        const socket = io();
+const allAudios = document.querySelectorAll('audio');
+let currentBGMId = null;
+
+// เก็บค่าระดับเสียงแยกกัน
+let volumes = {
+    master: 1,
+    bgm: 1,
+    sfx: 1
+};
+
+const fadeIntervals = {};
+
+function sendSound(id) { socket.emit('play-sound', id); }
+function sendCommand(cmd) { socket.emit('control-cmd', cmd); }
+
+// ฟังก์ชันส่งค่าการปรับเสียงแยกประเภท
+function updateVolume(type, val) {
+    volumes[type] = parseFloat(val);
+    document.getElementById(`vol-${type}-num`).innerText = Math.round(val * 100);
+    socket.emit('volume-set', { type, val });
+}
+
+socket.on('do-play', (nextId) => {
+    const nextAudio = document.getElementById(nextId);
+    if (!nextAudio) return;
+
+    if (nextId.startsWith('track')) {
+        // กรณีเป็นเพลงประกอบ (BGM) ให้ทำ Crossfade
+        if (currentBGMId && currentBGMId !== nextId) {
+            fadeOutAndStop(currentBGMId);
+        }
+        fadeInAndPlay(nextId);
+        currentBGMId = nextId;
+    } else {
+        // กรณีเป็น SFX ให้เล่นซ้อนทันที
+        nextAudio.volume = volumes.master * volumes.sfx;
+        nextAudio.currentTime = 0;
+        nextAudio.play().catch(e => console.log("User interaction required"));
+    }
+});
+
+function fadeOutAndStop(id) {
+    const audio = document.getElementById(id);
+    if (!audio) return;
+    clearInterval(fadeIntervals[id]);
+    fadeIntervals[id] = setInterval(() => {
+        if (audio.volume > 0.05) {
+            audio.volume -= 0.05;
+        } else {
+            audio.volume = 0;
+            audio.pause();
+            audio.currentTime = 0;
+            clearInterval(fadeIntervals[id]);
+        }
+    }, 30);
+}
+
+function fadeInAndPlay(id) {
+    const audio = document.getElementById(id);
+    if (!audio) return;
+    clearInterval(fadeIntervals[id]);
+    audio.volume = 0;
+    audio.play().catch(e => console.log("Interaction required"));
+    
+    fadeIntervals[id] = setInterval(() => {
+        const targetVol = volumes.master * volumes.bgm;
+        if (audio.volume < targetVol - 0.05) {
+            audio.volume += 0.05;
+        } else {
+            audio.volume = targetVol;
+            clearInterval(fadeIntervals[id]);
+        }
+    }, 30);
+}
+
+// รับคำสั่งปรับเสียงจาก Server
+socket.on('do-volume', (data) => {
+    volumes[data.type] = parseFloat(data.val);
+    const label = document.getElementById(`vol-${data.type}-num`);
+    if (label) label.innerText = Math.round(data.val * 100);
+    
+    allAudios.forEach(a => {
+        if (!a.paused) {
+            if (a.id.startsWith('track')) {
+                a.volume = volumes.master * volumes.bgm;
+            } else {
+                a.volume = volumes.master * volumes.sfx;
+            }
+        }
+    });
+});
+
+// จัดการคำสั่งควบคุม (Stop / Pause / Resume)
+socket.on('do-control', (cmd) => {
+    if (cmd === 'stop-all') {
+        allAudios.forEach(a => {
+            clearInterval(fadeIntervals[a.id]);
+            a.pause();
+            a.currentTime = 0;
+        });
+        currentBGMId = null;
+    } 
+    else if (cmd === 'pause-bgm') {
+        // พักเพลง BGM ปัจจุบัน
+        if (currentBGMId) {
+            const audio = document.getElementById(currentBGMId);
+            if (audio) audio.pause();
+        }
+    } 
+    else if (cmd === 'resume-bgm') {
+        // เล่นเพลง BGM ต่อจากที่ค้างไว้
+        if (currentBGMId) {
+            const audio = document.getElementById(currentBGMId);
+            if (audio) audio.play().catch(e => console.log("Interaction required"));
+        }
+    }
+});
+    </script>
+    </body>
+</html>
